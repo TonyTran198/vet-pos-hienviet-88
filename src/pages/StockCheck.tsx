@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ScanBarcode, 
-  ListChecks, 
   Save, 
   ClipboardList,
   AlertCircle 
@@ -19,7 +19,7 @@ import { StockCheckScanDialog } from "@/components/StockCheckScanDialog";
 import { StockCheckFilter } from "@/components/StockCheckFilter";
 import { StockCheckList } from "@/components/StockCheckList";
 
-type Mode = "list" | "barcode";
+type Mode = "manual" | "barcode";
 
 // Mock data for categories - in a real app this would come from an API
 const categories = [
@@ -29,11 +29,11 @@ const categories = [
 ];
 
 // Check if current month has been checked already (mocked)
-const currentMonthChecked = false; // This would be from an API in a real app
+const currentMonthChecked = false;
 
 export default function StockCheck() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("list");
+  const [mode, setMode] = useState<Mode>("manual");
   const [items, setItems] = useState<StockCheckUIItem[]>([]);
   const [notes, setNotes] = useState("");
   const [predefinedProducts, setPredefinedProducts] = useState<StockCheckUIItem[]>([]);
@@ -177,131 +177,108 @@ export default function StockCheck() {
     // After approval, we could set currentMonthChecked to false
   };
 
+  if (currentMonthChecked) {
+    return (
+      <div className="space-y-8">
+        <div className="bg-muted p-6 rounded-lg text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-primary mb-4" />
+          <h3 className="text-xl font-medium mb-2">
+            Đã hoàn thành kiểm kê tháng này
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            Bạn đã hoàn thành kiểm kê cho tháng này. Bạn có thể xem lịch sử kiểm kê hoặc yêu cầu kiểm kê lại.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Button variant="outline" onClick={handleReqeustRecheck}>
+              Yêu cầu kiểm kê lại
+            </Button>
+            <Button onClick={() => navigate("/stock-check/history")}>
+              Xem lịch sử kiểm kê
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Kiểm kê kho</h1>
-        {!currentMonthChecked && (
-          <div className="space-x-2">
-            <Button
-              variant={mode === "list" ? "default" : "outline"}
-              onClick={() => setMode("list")}
-            >
-              <ListChecks className="mr-2 h-4 w-4" />
-              Danh sách có sẵn
-            </Button>
-            <Button
-              variant={mode === "barcode" ? "default" : "outline"}
-              onClick={() => setMode("barcode")}
-            >
-              <ScanBarcode className="mr-2 h-4 w-4" />
-              Quét mã vạch
-            </Button>
-          </div>
-        )}
       </div>
 
-      {!currentMonthChecked ? (
-        <>
-          {mode === "barcode" && (
-            <StockCheckBarcodeMode
-              onSaveItem={handleAddItem}
-              scannedItems={items}
-              onRemoveItem={handleRemoveItem}
-            />
-          )}
-
-          {mode === "list" && (
+      <Tabs defaultValue="manual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manual">Kiểm kê thủ công</TabsTrigger>
+          <TabsTrigger value="barcode">Quét mã vạch</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="manual" className="space-y-4">
+          <StockCheckFilter 
+            categories={categories} 
+            onFilterChange={handleFilterChange} 
+          />
+          
+          {filteredProducts.length > 0 ? (
             <div className="space-y-4">
-              <StockCheckFilter 
-                categories={categories} 
-                onFilterChange={handleFilterChange} 
+              <h3 className="text-lg font-medium">
+                Danh sách sản phẩm cần kiểm kê ({filteredProducts.length})
+              </h3>
+              
+              <StockCheckList 
+                products={filteredProducts}
+                onUpdateQuantity={handleUpdateQuantity}
+                onBarcodeClick={handleBarcodeClick}
+                mode="list"
               />
               
-              {filteredProducts.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">
-                    Danh sách sản phẩm cần kiểm kê ({filteredProducts.length})
-                  </h3>
-                  
-                  <StockCheckList 
-                    products={filteredProducts}
-                    onUpdateQuantity={handleUpdateQuantity}
-                    onBarcodeClick={handleBarcodeClick}
-                    mode={mode}
-                  />
-                  
-                  <Button onClick={handleAddPredefinedToSession} className="w-full">
-                    <Save className="mr-2 h-4 w-4" />
-                    Thêm vào phiên kiểm kê
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  Không tìm thấy sản phẩm phù hợp với bộ lọc
-                </p>
-              )}
+              <Button onClick={handleAddPredefinedToSession} className="w-full">
+                <Save className="mr-2 h-4 w-4" />
+                Thêm vào phiên kiểm kê
+              </Button>
             </div>
-          )}
-
-          <Card>
-            <CardContent className="space-y-2 pt-4">
-              <Label htmlFor="notes">Ghi chú</Label>
-              <Input
-                id="notes"
-                placeholder="Nhập ghi chú về phiên kiểm kê này..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-between items-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/stock-check/history")}
-            >
-              <ClipboardList className="mr-2 h-4 w-4" />
-              Lịch sử kiểm kê
-            </Button>
-            <Button onClick={handleSaveSession}>
-              <Save className="mr-2 h-4 w-4" />
-              Lưu phiên kiểm kê
-            </Button>
-          </div>
-        </>
-      ) : (
-        <div className="space-y-8">
-          <div className="bg-muted p-6 rounded-lg text-center">
-            <AlertCircle className="mx-auto h-12 w-12 text-primary mb-4" />
-            <h3 className="text-xl font-medium mb-2">
-              Đã hoàn thành kiểm kê tháng này
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Bạn đã hoàn thành kiểm kê cho tháng này. Bạn có thể xem lịch sử kiểm kê hoặc yêu cầu kiểm kê lại.
+          ) : (
+            <p className="text-center text-muted-foreground py-4">
+              Không tìm thấy sản phẩm phù hợp với bộ lọc
             </p>
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline" onClick={handleReqeustRecheck}>
-                Yêu cầu kiểm kê lại
-              </Button>
-              <Button onClick={() => navigate("/stock-check/history")}>
-                Xem lịch sử kiểm kê
-              </Button>
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/stock-check/history")}
-            >
-              <ClipboardList className="mr-2 h-4 w-4" />
-              Lịch sử kiểm kê
-            </Button>
-          </div>
-        </div>
-      )}
-      
+          )}
+        </TabsContent>
+        
+        <TabsContent value="barcode" className="space-y-4">
+          <StockCheckBarcodeMode
+            onSaveItem={handleAddItem}
+            scannedItems={items}
+            onRemoveItem={handleRemoveItem}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <Card>
+        <CardContent className="space-y-2 pt-4">
+          <Label htmlFor="notes">Ghi chú</Label>
+          <Input
+            id="notes"
+            placeholder="Nhập ghi chú về phiên kiểm kê này..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between items-center">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/stock-check/history")}
+        >
+          <ClipboardList className="mr-2 h-4 w-4" />
+          Lịch sử kiểm kê
+        </Button>
+        <Button onClick={handleSaveSession}>
+          <Save className="mr-2 h-4 w-4" />
+          Lưu phiên kiểm kê
+        </Button>
+      </div>
+
       <StockCheckScanDialog 
         isOpen={scanDialogOpen}
         onClose={() => setScanDialogOpen(false)}
