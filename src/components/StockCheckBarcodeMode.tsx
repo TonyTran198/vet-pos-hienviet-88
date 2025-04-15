@@ -15,6 +15,7 @@ import { StockCheckUIItem } from "@/lib/types";
 import { products } from "@/utils/mockData";
 import { toast } from "sonner";
 import { StockCheckScanDialog } from "./StockCheckScanDialog";
+import { BarcodeScanner } from "./BarcodeScanner";
 
 interface StockCheckBarcodeModeProps {
   onSaveItem: (item: StockCheckUIItem) => void;
@@ -31,16 +32,15 @@ export function StockCheckBarcodeMode({
   const [currentProduct, setCurrentProduct] = useState<StockCheckUIItem | null>(null);
   const [actualQuantity, setActualQuantity] = useState<number>(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const handleBarcodeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!barcode) {
+  const handleSearch = (searchBarcode: string) => {
+    if (!searchBarcode) {
       toast.error("Vui lòng nhập mã vạch");
       return;
     }
     
-    const foundProduct = products.find(p => p.barcode === barcode);
+    const foundProduct = products.find(p => p.barcode === searchBarcode);
     
     if (!foundProduct) {
       toast.error("Không tìm thấy sản phẩm với mã vạch này");
@@ -65,6 +65,15 @@ export function StockCheckBarcodeMode({
     setActualQuantity(stockCheckItem.expectedQuantity);
     setBarcode("");
     setIsDialogOpen(true);
+  };
+  
+  const handleBarcodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(barcode);
+  };
+  
+  const handleScanComplete = (scannedBarcode: string) => {
+    handleSearch(scannedBarcode);
   };
   
   const handleSaveScannedItem = () => {
@@ -95,10 +104,19 @@ export function StockCheckBarcodeMode({
             onChange={(e) => setBarcode(e.target.value)}
             className="pl-10"
           />
-          <ScanBarcode className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <ScanBarcode 
+            className="absolute left-3 top-3 h-4 w-4 text-muted-foreground cursor-pointer" 
+            onClick={() => setIsScannerOpen(true)}
+          />
         </div>
         <Button type="submit">Tìm</Button>
       </form>
+
+      <BarcodeScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={handleScanComplete}
+      />
 
       <StockCheckScanDialog
         isOpen={isDialogOpen}

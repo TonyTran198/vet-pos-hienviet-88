@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  ScanBarcode, 
   Save, 
   ClipboardList,
-  AlertCircle 
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle
 } from "lucide-react";
 import { StockCheckUIItem } from "@/lib/types";
 import { StockCheckBarcodeMode } from "@/components/StockCheckBarcodeMode";
@@ -33,7 +34,6 @@ const currentMonthChecked = false;
 
 export default function StockCheck() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("manual");
   const [items, setItems] = useState<StockCheckUIItem[]>([]);
   const [notes, setNotes] = useState("");
   const [predefinedProducts, setPredefinedProducts] = useState<StockCheckUIItem[]>([]);
@@ -41,6 +41,8 @@ export default function StockCheck() {
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<StockCheckUIItem | null>(null);
   const [actualQuantity, setActualQuantity] = useState(0);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState("manual");
 
   useEffect(() => {
     // Load products and sort alphabetically (A-Z)
@@ -83,11 +85,14 @@ export default function StockCheck() {
   };
 
   const handleSaveSession = () => {
-    console.log("Saving session with items:", items);
+    console.log("Saving session with items:", activeTab === "manual" ? filteredProducts : items);
     console.log("Notes:", notes);
-    toast.success("Đã hoàn thành kiểm kê tháng này");
-    setItems([]);
-    setNotes("");
+    setShowSaveSuccess(true);
+  };
+
+  const handleReturnToCheck = () => {
+    setShowSaveSuccess(false);
+    // Keep all values but reset the success state
   };
 
   const handleUpdateQuantity = (id: string, actualQuantity: number) => {
@@ -121,17 +126,6 @@ export default function StockCheck() {
         return product;
       })
     );
-  };
-
-  const handleAddPredefinedToSession = () => {
-    const checkedItems = filteredProducts.filter(item => item.isChecked);
-    if (checkedItems.length === 0) {
-      toast.error("Vui lòng nhập số lượng thực tế cho ít nhất một sản phẩm");
-      return;
-    }
-    
-    setItems(checkedItems);
-    toast.success(`Đã thêm ${checkedItems.length} sản phẩm vào phiên kiểm kê`);
   };
 
   const handleFilterChange = (filters: { category: string; keyword: string; status: string }) => {
@@ -201,13 +195,39 @@ export default function StockCheck() {
     );
   }
 
+  if (showSaveSuccess) {
+    return (
+      <div className="space-y-8">
+        <div className="bg-muted p-6 rounded-lg text-center">
+          <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-6 h-6" />
+          </div>
+          <h3 className="text-xl font-medium mb-2">
+            Đã lưu thành công
+          </h3>
+          <Button 
+            onClick={handleReturnToCheck}
+            className="mt-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kiểm kê lại
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Kiểm kê kho</h1>
       </div>
 
-      <Tabs defaultValue="manual" className="w-full">
+      <Tabs 
+        defaultValue="manual" 
+        className="w-full"
+        onValueChange={setActiveTab}
+      >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="manual">Kiểm kê thủ công</TabsTrigger>
           <TabsTrigger value="barcode">Quét mã vạch</TabsTrigger>
@@ -231,11 +251,6 @@ export default function StockCheck() {
                 onBarcodeClick={handleBarcodeClick}
                 mode="list"
               />
-              
-              <Button onClick={handleAddPredefinedToSession} className="w-full">
-                <Save className="mr-2 h-4 w-4" />
-                Thêm vào phiên kiểm kê
-              </Button>
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-4">

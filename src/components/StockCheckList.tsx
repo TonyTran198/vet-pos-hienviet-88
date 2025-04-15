@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,9 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle, ScanBarcode } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { StockCheckUIItem } from "@/lib/types";
-import { Button } from "./ui/button";
 
 interface StockCheckListProps {
   products: StockCheckUIItem[];
@@ -24,7 +22,6 @@ interface StockCheckListProps {
 export function StockCheckList({
   products,
   onUpdateQuantity,
-  onBarcodeClick,
   mode,
 }: StockCheckListProps) {
   if (!products.length) {
@@ -43,7 +40,6 @@ export function StockCheckList({
             <TableHead>Tên sản phẩm</TableHead>
             <TableHead className="w-[100px] text-center">Hệ thống</TableHead>
             <TableHead className="w-[120px] text-center">Thực tế</TableHead>
-            {mode === 'barcode' && <TableHead className="w-[50px]"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,18 +90,6 @@ export function StockCheckList({
                   className="w-full"
                 />
               </TableCell>
-              {mode === 'barcode' && (
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onBarcodeClick(product)}
-                    className="w-full"
-                  >
-                    <ScanBarcode className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>
@@ -113,4 +97,3 @@ export function StockCheckList({
     </div>
   );
 }
-
