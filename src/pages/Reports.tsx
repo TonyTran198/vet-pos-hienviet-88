@@ -1,13 +1,18 @@
 
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-import { Package, ClipboardCheck } from "lucide-react";
+import { Package, ClipboardCheck, AlertTriangle } from "lucide-react";
 
 const reports = [
+  {
+    id: "low-stock",
+    title: "Sản phẩm sắp hết hàng",
+    description: "Xem danh sách các sản phẩm cần nhập thêm",
+    icon: "alert-triangle",
+    path: "/low-stock"
+  },
   {
     id: "high-stock",
     title: "Sản phẩm tồn kho nhiều",
@@ -26,6 +31,8 @@ const reports = [
 
 const getIconComponent = (iconName: string) => {
   switch (iconName) {
+    case "alert-triangle":
+      return <AlertTriangle className="h-5 w-5" />;
     case "package":
       return <Package className="h-5 w-5" />;
     case "clipboard-check":
@@ -43,7 +50,7 @@ export default function Reports() {
         <p className="text-muted-foreground">Xem các báo cáo về kho hàng</p>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {reports.map((report) => (
           <Card key={report.id} className="overflow-hidden">
             <CardHeader className="flex flex-row items-center gap-3 p-4">
