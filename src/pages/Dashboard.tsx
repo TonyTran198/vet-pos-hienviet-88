@@ -1,13 +1,13 @@
 
-import { Package, ClipboardCheck, AlertTriangle } from "lucide-react";
+import { Package, ClipboardCheck, Activity } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { ProductItem } from "@/components/ProductItem";
-import { products, stockChecks, getLowStockProducts } from "@/utils/mockData";
+import { products, stockChecks } from "@/utils/mockData";
 
 export default function Dashboard() {
-  const lowStockProducts = getLowStockProducts(10);
   const totalProducts = products.length;
   const lastStockCheck = stockChecks[0];
+  const recentProducts = products.slice(0, 3); // Get 3 most recent products
   
   return (
     <div className="space-y-6">
@@ -33,34 +33,40 @@ export default function Dashboard() {
         />
         
         <StatCard
-          title="Sản phẩm sắp hết hàng"
-          value={lowStockProducts.length}
-          icon={<AlertTriangle size={20} />}
-          description="Sản phẩm cần nhập thêm"
-          linkTo="/low-stock"
-          className="border-l-4 border-warning"
+          title="Hoạt động gần đây"
+          value={recentProducts.length}
+          icon={<Activity size={20} />}
+          description="Xem tất cả hoạt động"
+          linkTo="/activities"
+          className="border-l-4 border-primary"
         />
       </div>
       
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Sản phẩm sắp hết hàng</h2>
-          <a href="/low-stock" className="text-sm text-primary hover:underline">
+          <h2 className="text-lg font-semibold">Hoạt động gần đây</h2>
+          <a href="/activities" className="text-sm text-primary hover:underline">
             Xem tất cả
           </a>
         </div>
         
-        {lowStockProducts.length > 0 ? (
-          <div className="space-y-3">
-            {lowStockProducts.slice(0, 3).map((product) => (
-              <ProductItem key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground">
-            Không có sản phẩm nào sắp hết hàng
-          </p>
-        )}
+        <div className="space-y-3">
+          {lastStockCheck && (
+            <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ClipboardCheck size={16} />
+                <span>Kiểm kê kho</span>
+                <span>•</span>
+                <time>{lastStockCheck.date.toLocaleDateString('vi-VN')}</time>
+              </div>
+              <p className="mt-1 text-sm">Đã kiểm tra {lastStockCheck.products.length} sản phẩm</p>
+            </div>
+          )}
+          
+          {recentProducts.map((product) => (
+            <ProductItem key={product.id} product={product} showAddedDate />
+          ))}
+        </div>
       </div>
     </div>
   );
