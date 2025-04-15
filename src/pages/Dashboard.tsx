@@ -1,13 +1,13 @@
 
 import { Package, ClipboardCheck, Activity } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
-import { ProductItem } from "@/components/ProductItem";
-import { products, stockChecks } from "@/utils/mockData";
+import { ActivityItem } from "@/components/ActivityItem";
+import { products, stockChecks, activities } from "@/utils/mockData";
 
 export default function Dashboard() {
   const totalProducts = products.length;
   const lastStockCheck = stockChecks[0];
-  const recentProducts = products.slice(0, 3); // Get 3 most recent products
+  const recentActivities = activities.slice(0, 5); // Show last 5 activities
   
   return (
     <div className="space-y-6">
@@ -34,7 +34,7 @@ export default function Dashboard() {
         
         <StatCard
           title="Hoạt động gần đây"
-          value={recentProducts.length}
+          value={activities.length}
           icon={<Activity size={20} />}
           description="Xem tất cả hoạt động"
           linkTo="/activities"
@@ -51,27 +51,12 @@ export default function Dashboard() {
         </div>
         
         <div className="space-y-3">
-          {lastStockCheck && (
-            <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ClipboardCheck size={16} />
-                <span>Kiểm kê kho</span>
-                <span>•</span>
-                <time>{lastStockCheck.date.toLocaleDateString('vi-VN')}</time>
-              </div>
-              <p className="mt-1 text-sm">Đã kiểm tra {lastStockCheck.products.length} sản phẩm</p>
-            </div>
-          )}
-          
-          {recentProducts.map((product) => (
-            <ProductItem 
-              key={product.id} 
-              product={product} 
-              showAddedDate={true} 
-            />
+          {recentActivities.map((activity) => (
+            <ActivityItem key={activity.id} activity={activity} />
           ))}
         </div>
       </div>
     </div>
   );
 }
+

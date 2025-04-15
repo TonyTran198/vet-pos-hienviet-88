@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   scientificName: string;
@@ -47,4 +46,15 @@ export interface Report {
   title: string;
   description: string;
   icon: string;
+}
+
+export type ActivityType = 'stock_check' | 'product_add' | 'low_stock';
+
+export interface Activity {
+  id: string;
+  type: ActivityType;
+  title: string;
+  description?: string;
+  timestamp: Date;
+  link?: string;
 }

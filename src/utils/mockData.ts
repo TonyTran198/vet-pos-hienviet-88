@@ -1,4 +1,3 @@
-
 import { Product, Category, StockCheck, Report } from "../lib/types";
 
 export const categories: Category[] = [
@@ -200,6 +199,33 @@ export const reports: Report[] = [
     title: "Lịch sử kiểm kê",
     description: "Xem lịch sử các đợt kiểm kê kho",
     icon: "clipboard-check"
+  }
+];
+
+export const activities: Activity[] = [
+  {
+    id: 'act1',
+    type: 'stock_check',
+    title: 'Kiểm kê hoàn thành',
+    description: 'Đã kiểm tra 25 sản phẩm',
+    timestamp: new Date('2024-04-15T10:23:00'),
+    link: '/stock-check/history'
+  },
+  {
+    id: 'act2',
+    type: 'product_add',
+    title: 'Thêm mới sản phẩm',
+    description: 'Amoxicillin 250mg',
+    timestamp: new Date('2024-04-14T16:17:00'),
+    link: '/products'
+  },
+  {
+    id: 'act3',
+    type: 'low_stock',
+    title: 'Cảnh báo hàng sắp hết',
+    description: '3 sản phẩm sắp hết hàng',
+    timestamp: new Date('2024-04-14T09:41:00'),
+    link: '/low-stock'
   }
 ];
 
