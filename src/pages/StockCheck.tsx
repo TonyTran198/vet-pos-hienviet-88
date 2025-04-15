@@ -311,11 +311,6 @@ export default function StockCheck() {
           </div>
         </div>
       )}
-      
-      <Button className="w-full" onClick={() => navigate("/stock-check/history")}>
-        <Calendar className="mr-2 h-4 w-4" />
-        Xem lịch sử kiểm kê
-      </Button>
     </div>
   );
 }
