@@ -7,6 +7,7 @@ import { MainLayout } from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import ProductList from "./pages/ProductList";
 import AddProduct from "./pages/AddProduct";
+import ProductDetail from "./pages/ProductDetail";
 import StockCheck from "./pages/StockCheck";
 import Reports from "./pages/Reports";
 import LowStockList from "./pages/LowStockList";
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/add" element={<AddProduct />} />
+          <Route path="/products/:productId" element={<ProductDetail />} />
           <Route path="/stock-check" element={<StockCheck />} />
           <Route path="/stock-check/history" element={<StockCheckHistory />} />
           <Route path="/reports" element={<Reports />} />

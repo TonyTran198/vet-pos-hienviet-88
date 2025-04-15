@@ -1,214 +1,180 @@
 
 import { useState } from "react";
-import { Barcode, Check, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ScanBarcode, Plus, Trash } from "lucide-react";
+import { 
+  Table, 
+  TableBody, 
+  TableCaption, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
+import { StockCheckUIItem } from "@/lib/types";
+import { Label } from "@/components/ui/label";
 import { products } from "@/utils/mockData";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { StockCheckUIItem } from "@/lib/types";
 
 interface StockCheckBarcodeModeProps {
-  onSaveSession: () => void;
+  onSaveItem: (item: StockCheckUIItem) => void;
+  scannedItems: StockCheckUIItem[];
+  onRemoveItem: (id: string) => void;
 }
 
-export function StockCheckBarcodeMode({ onSaveSession }: StockCheckBarcodeModeProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentBarcode, setCurrentBarcode] = useState("");
-  const [scannedQuantity, setScannedQuantity] = useState<number>(0);
-  const [scannedItems, setScannedItems] = useState<StockCheckUIItem[]>([]);
+export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem }: StockCheckBarcodeModeProps) {
+  const [barcode, setBarcode] = useState("");
   const [currentProduct, setCurrentProduct] = useState<StockCheckUIItem | null>(null);
+  const [actualQuantity, setActualQuantity] = useState<number>(0);
 
-  const handleBarcodeSubmit = (barcode: string) => {
-    const product = products.find(p => p.barcode === barcode);
+  const handleBarcodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (!product) {
-      toast.error("Không tìm thấy sản phẩm", {
-        description: "Mã vạch không tồn tại trong hệ thống"
-      });
+    if (!barcode) {
+      toast.error("Vui lòng nhập mã vạch");
       return;
     }
-
-    const stockItem: StockCheckUIItem = {
-      id: product.id,
-      name: product.scientificName,
-      commonName: product.commonName,
-      expectedQuantity: product.quantity,
-      actualQuantity: 0,
-      difference: -product.quantity,
-      isChecked: false,
-      categoryId: product.categoryId,
-      barcode: product.barcode
-    };
-
-    setCurrentProduct(stockItem);
-    setCurrentBarcode("");
-    setIsDialogOpen(true);
-  };
-
-  const handleSaveScannedItem = () => {
-    if (!currentProduct) return;
-
-    const updatedItem = {
-      ...currentProduct,
-      actualQuantity: scannedQuantity,
-      difference: scannedQuantity - currentProduct.expectedQuantity,
-      isChecked: true
-    };
-
-    setScannedItems(prev => {
-      const exists = prev.find(item => item.id === updatedItem.id);
-      if (exists) {
-        return prev.map(item => 
-          item.id === updatedItem.id ? updatedItem : item
-        );
-      }
-      return [...prev, updatedItem];
-    });
-
-    setIsDialogOpen(false);
-    setScannedQuantity(0);
-    setCurrentProduct(null);
     
-    toast.success("Đã lưu số lượng sản phẩm", {
-      description: `${updatedItem.name} đã được cập nhật.`
-    });
+    // Find product by barcode
+    const foundProduct = products.find(p => p.barcode === barcode);
+    
+    if (!foundProduct) {
+      toast.error("Không tìm thấy sản phẩm với mã vạch này");
+      return;
+    }
+    
+    // Create a StockCheckUIItem from the found product
+    const stockCheckItem: StockCheckUIItem = {
+      id: foundProduct.id,
+      productId: foundProduct.id,
+      productName: foundProduct.scientificName,
+      name: foundProduct.scientificName,
+      commonName: foundProduct.commonName,
+      expectedQuantity: foundProduct.quantity,
+      actualQuantity: foundProduct.quantity, // Default to expected
+      difference: 0,
+      isChecked: false,
+      categoryId: foundProduct.categoryId,
+      barcode: foundProduct.barcode
+    };
+    
+    setCurrentProduct(stockCheckItem);
+    setActualQuantity(stockCheckItem.expectedQuantity);
+    setBarcode("");
   };
-
-  const handleSimulateScan = () => {
-    // In a real app, this would be connected to a barcode scanner
-    toast("Chức năng quét mã vạch đang được phát triển", {
-      description: "Hiện tại bạn có thể nhập mã vạch thủ công để test."
-    });
+  
+  const handleSaveScannedItem = () => {
+    if (currentProduct) {
+      const difference = actualQuantity - currentProduct.expectedQuantity;
+      const updatedItem = {
+        ...currentProduct,
+        actualQuantity,
+        difference,
+        isChecked: true
+      };
+      
+      onSaveItem(updatedItem);
+      setCurrentProduct(null);
+      setActualQuantity(0);
+      toast.success("Đã thêm sản phẩm vào danh sách kiểm kê");
+    }
   };
-
+  
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Nhập mã vạch..."
-            value={currentBarcode}
-            onChange={(e) => setCurrentBarcode(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && currentBarcode) {
-                handleBarcodeSubmit(currentBarcode);
-              }
-            }}
-          />
-        </div>
-        <Button variant="outline" onClick={handleSimulateScan}>
-          <Barcode className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {scannedItems.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium">Sản phẩm đã quét ({scannedItems.length})</h3>
-            <Button onClick={onSaveSession}>
-              <Save className="mr-2 h-4 w-4" />
-              Lưu phiên kiểm kê
-            </Button>
+      <div className="space-y-4">
+        <form onSubmit={handleBarcodeSubmit} className="flex space-x-2">
+          <div className="relative flex-1">
+            <Input
+              placeholder="Nhập mã vạch..."
+              value={barcode}
+              onChange={(e) => setBarcode(e.target.value)}
+              className="pl-10"
+            />
+            <ScanBarcode className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           </div>
-
-          <div className="space-y-3">
-            {scannedItems.map((item) => (
-              <Card key={item.id}>
-                <CardHeader className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{item.name}</h4>
-                      {item.commonName && (
-                        <p className="text-sm text-muted-foreground">{item.commonName}</p>
-                      )}
-                    </div>
-                    <Badge variant="secondary" className="flex items-center">
-                      <Check className="mr-1 h-3 w-3" /> Đã kiểm kê
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="py-2">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Số lượng hệ thống</p>
-                      <p className="font-medium">{item.expectedQuantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Số lượng thực tế</p>
-                      <p className="font-medium">{item.actualQuantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Chênh lệch</p>
-                      <p className={`font-medium ${
-                        item.difference > 0 ? "text-green-600" : 
-                        item.difference < 0 ? "text-red-600" : 
-                        "text-muted-foreground"
-                      }`}>
-                        {item.difference > 0 ? "+" : ""}{item.difference}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nhập số lượng thực tế</DialogTitle>
-          </DialogHeader>
-          
-          {currentProduct && (
-            <div className="space-y-4 py-4">
+          <Button type="submit">Tìm</Button>
+        </form>
+        
+        {currentProduct && (
+          <Card className="mt-4">
+            <CardContent className="p-4 space-y-4">
               <div>
-                <h3 className="font-medium">{currentProduct.name}</h3>
+                <h3 className="font-bold text-lg">{currentProduct.name}</h3>
                 {currentProduct.commonName && (
-                  <p className="text-sm text-muted-foreground">{currentProduct.commonName}</p>
+                  <p className="text-muted-foreground">{currentProduct.commonName}</p>
                 )}
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Số lượng hệ thống</p>
-                  <p className="text-lg font-medium">{currentProduct.expectedQuantity}</p>
+                  <Label>Số lượng hệ thống</Label>
+                  <p className="font-medium">{currentProduct.expectedQuantity}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Số lượng thực tế</p>
+                  <Label htmlFor="actualQuantity">Số lượng thực tế</Label>
                   <Input
+                    id="actualQuantity"
                     type="number"
-                    value={scannedQuantity || ''}
-                    onChange={(e) => setScannedQuantity(parseInt(e.target.value) || 0)}
-                    min={0}
+                    min="0"
+                    value={actualQuantity}
+                    onChange={(e) => setActualQuantity(parseInt(e.target.value) || 0)}
                     className="mt-1"
-                    autoFocus
                   />
                 </div>
               </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Hủy
-            </Button>
-            <Button onClick={handleSaveScannedItem}>
-              Lưu
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              
+              <Button onClick={handleSaveScannedItem} className="w-full">
+                <Plus className="mr-2 h-4 w-4" />
+                Lưu sản phẩm
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-medium mb-4">Sản phẩm đã quét ({scannedItems.length})</h3>
+        
+        {scannedItems.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tên sản phẩm</TableHead>
+                <TableHead className="w-[100px]">Hệ thống</TableHead>
+                <TableHead className="w-[100px]">Thực tế</TableHead>
+                <TableHead className="w-[100px]">Chênh lệch</TableHead>
+                <TableHead className="w-[80px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {scannedItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.expectedQuantity}</TableCell>
+                  <TableCell>{item.actualQuantity}</TableCell>
+                  <TableCell>{item.difference}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRemoveItem(item.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-center text-muted-foreground py-4">
+            Chưa có sản phẩm nào được quét
+          </p>
+        )}
+      </div>
     </div>
   );
 }
