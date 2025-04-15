@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -229,6 +228,7 @@ export default function StockCheck() {
                     products={filteredProducts}
                     onUpdateQuantity={handleUpdateQuantity}
                     onBarcodeClick={handleBarcodeClick}
+                    mode={mode}
                   />
                   
                   <Button onClick={handleAddPredefinedToSession} className="w-full">
@@ -271,7 +271,6 @@ export default function StockCheck() {
           </div>
         </>
       ) : (
-        // Show this when current month has already been checked
         <div className="space-y-8">
           <div className="bg-muted p-6 rounded-lg text-center">
             <AlertCircle className="mx-auto h-12 w-12 text-primary mb-4" />

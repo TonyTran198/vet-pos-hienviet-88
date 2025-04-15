@@ -18,12 +18,14 @@ interface StockCheckListProps {
   products: StockCheckUIItem[];
   onUpdateQuantity: (id: string, quantity: number) => void;
   onBarcodeClick: (product: StockCheckUIItem) => void;
+  mode: 'list' | 'barcode';
 }
 
 export function StockCheckList({
   products,
   onUpdateQuantity,
   onBarcodeClick,
+  mode,
 }: StockCheckListProps) {
   if (!products.length) {
     return (
@@ -41,7 +43,7 @@ export function StockCheckList({
             <TableHead>Tên sản phẩm</TableHead>
             <TableHead className="w-[100px] text-center">Hệ thống</TableHead>
             <TableHead className="w-[120px] text-center">Thực tế</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            {mode === 'barcode' && <TableHead className="w-[50px]"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -92,15 +94,17 @@ export function StockCheckList({
                   className="w-full"
                 />
               </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onBarcodeClick(product)}
-                >
-                  <ScanBarcode className="h-4 w-4" />
-                </Button>
-              </TableCell>
+              {mode === 'barcode' && (
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onBarcodeClick(product)}
+                  >
+                    <ScanBarcode className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
