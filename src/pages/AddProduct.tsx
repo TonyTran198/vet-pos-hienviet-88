@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { categories } from "@/utils/mockData";
+import { useNavigate, useParams } from "react-router-dom";
+import { categories, products } from "@/utils/mockData";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -43,27 +43,40 @@ const formSchema = z.object({
 export default function AddProduct() {
   const [isPriceWarning, setIsPriceWarning] = useState(false);
   const navigate = useNavigate();
+  const { productId } = useParams();
+  const isEditMode = Boolean(productId);
+  
+  // Find existing product if in edit mode
+  const existingProduct = isEditMode ? products.find(p => p.id === productId) : null;
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      scientificName: "",
-      commonName: "",
-      categoryId: "",
-      barcode: "",
-      sku: "",
-      unit: "",
-      tags: "",
-      description: "",
-      quantity: 0,
-      costPrice: 0,
-      sellingPrice: 0,
-      uses: "",
-      ingredients: "",
-      status: true,
-      notes: "",
+      scientificName: existingProduct?.scientificName || "",
+      commonName: existingProduct?.commonName || "",
+      categoryId: existingProduct?.categoryId || "",
+      barcode: existingProduct?.barcode || "",
+      sku: existingProduct?.sku || "",
+      unit: existingProduct?.unit || "",
+      tags: existingProduct?.tags.join(", ") || "",
+      description: existingProduct?.description || "",
+      quantity: existingProduct?.quantity || 0,
+      costPrice: existingProduct?.costPrice || 0,
+      sellingPrice: existingProduct?.sellingPrice || 0,
+      uses: existingProduct?.uses || "",
+      ingredients: existingProduct?.ingredients || "",
+      status: existingProduct?.status === "active",
+      notes: existingProduct?.notes || "",
     },
   });
+  
+  // Redirect if product not found in edit mode
+  useEffect(() => {
+    if (isEditMode && !existingProduct) {
+      toast.error("Không tìm thấy sản phẩm");
+      navigate("/products");
+    }
+  }, [isEditMode, existingProduct, navigate]);
   
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Check if selling price is less than cost price
@@ -72,13 +85,11 @@ export default function AddProduct() {
       return;
     }
 
-    // In a real app, this would save the product to the database
+    // In a real app, this would save/update the product in the database
     console.log(values);
     
-    // Show success message
-    toast.success("Sản phẩm đã được thêm thành công!");
-    
-    // Navigate back to products list
+    // Show success message and navigate
+    toast.success(isEditMode ? "Đã cập nhật sản phẩm" : "Sản phẩm đã được thêm thành công!");
     navigate("/products");
   }
 
@@ -86,7 +97,6 @@ export default function AddProduct() {
   const costPrice = form.watch("costPrice");
   const sellingPrice = form.watch("sellingPrice");
   
-  // Reset price warning when prices change
   useEffect(() => {
     if (Number(sellingPrice) >= Number(costPrice)) {
       setIsPriceWarning(false);
@@ -100,8 +110,12 @@ export default function AddProduct() {
           <ArrowLeft size={18} />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Thêm sản phẩm mới</h1>
-          <p className="text-muted-foreground">Nhập thông tin sản phẩm</p>
+          <h1 className="text-2xl font-bold">
+            {isEditMode ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditMode ? "Chỉnh sửa thông tin sản phẩm" : "Nhập thông tin sản phẩm"}
+          </p>
         </div>
       </div>
       
@@ -407,7 +421,7 @@ export default function AddProduct() {
             </Button>
             <Button type="submit">
               <Save className="mr-2 h-4 w-4" />
-              Lưu sản phẩm
+              {isEditMode ? "Lưu chỉnh sửa" : "Lưu sản phẩm"}
             </Button>
           </div>
         </form>
