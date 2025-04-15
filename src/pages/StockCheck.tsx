@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,13 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScanBarcode, ListChecks, Save, Trash } from "lucide-react";
+import { ScanBarcode, ListChecks, Save, Trash, ClipboardList } from "lucide-react";
 import { StockCheckUIItem } from "@/lib/types";
 import { StockCheckBarcodeMode } from "@/components/StockCheckBarcodeMode";
 
 type Mode = "list" | "barcode";
 
 export default function StockCheck() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("list");
   const [items, setItems] = useState<StockCheckUIItem[]>([]);
   const [notes, setNotes] = useState("");
@@ -138,7 +141,14 @@ export default function StockCheck() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/stock-check/history")}
+            >
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Lịch sử kiểm kê
+            </Button>
             <Button onClick={handleSaveSession}>
               <Save className="mr-2 h-4 w-4" />
               Lưu phiên kiểm kê
@@ -149,3 +159,4 @@ export default function StockCheck() {
     </div>
   );
 }
+
