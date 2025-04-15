@@ -100,6 +100,7 @@ export function StockCheckList({
                     variant="ghost"
                     size="icon"
                     onClick={() => onBarcodeClick(product)}
+                    className="w-full"
                   >
                     <ScanBarcode className="h-4 w-4" />
                   </Button>
@@ -112,3 +113,4 @@ export function StockCheckList({
     </div>
   );
 }
+
