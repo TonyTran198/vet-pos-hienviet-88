@@ -64,7 +64,11 @@ export default function Dashboard() {
           )}
           
           {recentProducts.map((product) => (
-            <ProductItem key={product.id} product={product} showAddedDate />
+            <ProductItem 
+              key={product.id} 
+              product={product} 
+              showAddedDate={true} 
+            />
           ))}
         </div>
       </div>

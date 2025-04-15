@@ -13,9 +13,10 @@ interface ProductItemProps {
   product: Product;
   showActions?: boolean;
   canEditQuantity?: boolean;
+  showAddedDate?: boolean;
 }
 
-export function ProductItem({ product, showActions = true, canEditQuantity = false }: ProductItemProps) {
+export function ProductItem({ product, showActions = true, canEditQuantity = false, showAddedDate = false }: ProductItemProps) {
   const [quantity, setQuantity] = useState(product.quantity);
   
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +42,11 @@ export function ProductItem({ product, showActions = true, canEditQuantity = fal
             <p className="mt-1 text-xs">
               <span className="text-muted-foreground">Mã vạch:</span> {product.barcode}
             </p>
+            {showAddedDate && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ngày thêm: {product.createdAt.toLocaleDateString('vi-VN')}
+              </p>
+            )}
             {product.tags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {product.tags.map((tag) => (
