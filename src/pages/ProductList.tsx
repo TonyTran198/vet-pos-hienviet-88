@@ -10,7 +10,7 @@ import { Filter, Plus, Search } from "lucide-react";
 
 export default function ProductList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   
   const filteredProducts = products.filter((product) => {
     // Filter by search query
@@ -22,7 +22,7 @@ export default function ProductList() {
     
     // Filter by category
     const matchesCategory = 
-      selectedCategory === "" || 
+      selectedCategory === "all" || 
       product.categoryId === selectedCategory;
     
     return matchesSearch && matchesCategory;
@@ -61,7 +61,7 @@ export default function ProductList() {
               <SelectValue placeholder="Tất cả danh mục" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tất cả danh mục</SelectItem>
+              <SelectItem value="all">Tất cả danh mục</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}

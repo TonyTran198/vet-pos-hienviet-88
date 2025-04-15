@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "@/utils/mockData";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,9 +31,9 @@ const formSchema = z.object({
   unit: z.string().optional(),
   tags: z.string().optional(),
   description: z.string().optional(),
-  quantity: z.string().transform((val) => Number(val) || 0),
-  costPrice: z.string().min(1, { message: "Giá nhập là bắt buộc" }).transform((val) => Number(val) || 0),
-  sellingPrice: z.string().min(1, { message: "Giá bán là bắt buộc" }).transform((val) => Number(val) || 0),
+  quantity: z.coerce.number().default(0),
+  costPrice: z.coerce.number().min(0, { message: "Giá nhập phải lớn hơn hoặc bằng 0" }),
+  sellingPrice: z.coerce.number().min(0, { message: "Giá bán phải lớn hơn hoặc bằng 0" }),
   uses: z.string().optional(),
   ingredients: z.string().optional(),
   status: z.boolean().default(true),
@@ -55,9 +55,9 @@ export default function AddProduct() {
       unit: "",
       tags: "",
       description: "",
-      quantity: "0",
-      costPrice: "",
-      sellingPrice: "",
+      quantity: 0,
+      costPrice: 0,
+      sellingPrice: 0,
       uses: "",
       ingredients: "",
       status: true,
@@ -87,7 +87,7 @@ export default function AddProduct() {
   const sellingPrice = form.watch("sellingPrice");
   
   // Reset price warning when prices change
-  React.useEffect(() => {
+  useEffect(() => {
     if (Number(sellingPrice) >= Number(costPrice)) {
       setIsPriceWarning(false);
     }
@@ -243,9 +243,11 @@ export default function AddProduct() {
                         {...field}
                         onChange={(e) => {
                           field.onChange(e);
+                          const costPriceValue = parseFloat(e.target.value);
+                          const sellingPriceValue = form.getValues("sellingPrice");
                           if (
-                            Number(e.target.value) > Number(form.getValues("sellingPrice")) &&
-                            form.getValues("sellingPrice") !== ""
+                            costPriceValue > sellingPriceValue &&
+                            sellingPriceValue !== 0
                           ) {
                             setIsPriceWarning(true);
                           } else {
@@ -274,9 +276,11 @@ export default function AddProduct() {
                         {...field}
                         onChange={(e) => {
                           field.onChange(e);
+                          const sellingPriceValue = parseFloat(e.target.value);
+                          const costPriceValue = form.getValues("costPrice");
                           if (
-                            Number(e.target.value) < Number(form.getValues("costPrice")) &&
-                            form.getValues("costPrice") !== ""
+                            sellingPriceValue < costPriceValue &&
+                            costPriceValue !== 0
                           ) {
                             setIsPriceWarning(true);
                           } else {
