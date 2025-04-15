@@ -51,7 +51,7 @@ export default function HighStockList() {
                 className="cursor-pointer"
                 onClick={() => navigate(`/products/${product.id}`)}
               >
-                <TableCell>{product.name}</TableCell>
+                <TableCell>{product.scientificName}</TableCell>
                 <TableCell className="text-right">{product.quantity}</TableCell>
                 <TableCell>{product.unit}</TableCell>
               </TableRow>
