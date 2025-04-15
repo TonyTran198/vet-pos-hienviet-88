@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Barcode, Calendar, Check, ChevronDown, ChevronUp, Filter, Save, Search } from "lucide-react";
+import { Barcode, Calendar, Check, ChevronDown, ChevronUp, Filter, Save, Search, LayoutList } from "lucide-react";
 import { products, categories, stockChecks } from "@/utils/mockData";
 import { StockCheck as StockCheckType, StockCheckItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { StockCheckBarcodeMode } from "@/components/StockCheckBarcodeMode";
 import {
   Select,
   SelectContent,
@@ -22,9 +22,11 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type CheckStatus = "all" | "pending" | "checked";
+type CheckMode = "list" | "barcode";
 
 export default function StockCheck() {
   const navigate = useNavigate();
+  const [checkMode, setCheckMode] = useState<CheckMode>("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [checkStatus, setCheckStatus] = useState<CheckStatus>("all");
@@ -46,7 +48,6 @@ export default function StockCheck() {
   const [openCheckList, setOpenCheckList] = useState(true);
   const [openHistory, setOpenHistory] = useState(true);
   
-  // Check if current month has been checked
   useEffect(() => {
     const today = new Date();
     const currentMonth = today.getMonth();
@@ -60,19 +61,15 @@ export default function StockCheck() {
     setCurrentMonthChecked(hasCurrentMonthCheck);
   }, []);
   
-  // Apply filters to items
   const filteredItems = stockItems.filter(item => {
-    // Search filter
     const matchesSearch = 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.commonName && item.commonName.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.barcode.includes(searchQuery);
     
-    // Category filter
     const matchesCategory = 
       categoryFilter === "all" || item.categoryId === categoryFilter;
     
-    // Check status filter
     const matchesStatus = 
       checkStatus === "all" || 
       (checkStatus === "checked" && item.isChecked) ||
@@ -96,7 +93,6 @@ export default function StockCheck() {
   };
   
   const handleSaveSession = () => {
-    // In a real app, this would save the stock check session to the database
     const now = new Date();
     const newStockCheck: StockCheckType = {
       id: `check${stockChecks.length + 1}`,
@@ -128,7 +124,6 @@ export default function StockCheck() {
   };
   
   const handleBarcodeScanner = () => {
-    // In a real app, this would trigger the barcode scanner
     toast("Chức năng quét mã vạch đang được phát triển", {
       description: "Tính năng này sẽ có trong phiên bản tiếp theo."
     });
@@ -158,7 +153,17 @@ export default function StockCheck() {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleBarcodeScanner}>
+          <Button 
+            variant={checkMode === "list" ? "default" : "outline"}
+            onClick={() => setCheckMode("list")}
+          >
+            <LayoutList className="mr-2 h-4 w-4" />
+            Kiểm theo danh sách
+          </Button>
+          <Button 
+            variant={checkMode === "barcode" ? "default" : "outline"}
+            onClick={() => setCheckMode("barcode")}
+          >
             <Barcode className="mr-2 h-4 w-4" />
             Quét mã vạch
           </Button>
@@ -169,172 +174,124 @@ export default function StockCheck() {
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="rounded-lg border p-4">
-        <div className="flex items-center mb-4">
-          <Filter className="h-4 w-4 mr-2" />
-          <h3 className="font-medium">Lọc sản phẩm</h3>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Danh mục</p>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả danh mục" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả danh mục</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Trạng thái</p>
-            <Select value={checkStatus} onValueChange={(value) => setCheckStatus(value as CheckStatus)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="pending">Chưa kiểm kê</SelectItem>
-                <SelectItem value="checked">Đã kiểm kê</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Tìm kiếm</p>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Tìm sản phẩm, barcode..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {!currentMonthChecked ? (
         <>
-          <Collapsible open={openCheckList} onOpenChange={setOpenCheckList} className="border rounded-lg">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center">
-                <h2 className="text-lg font-semibold">Danh sách kiểm kê</h2>
-                <Badge variant="outline" className="ml-2">
-                  {checkedItemsCount}/{totalItemCount}
-                </Badge>
-              </div>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  {openCheckList ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            
-            <CollapsibleContent>
-              <Separator />
-              
-              <div className="p-4">
-                <h2 className="mb-4 text-lg font-semibold">Ghi chú phiên kiểm kê</h2>
-                <Textarea 
-                  placeholder="Nhập ghi chú cho phiên kiểm kê này..." 
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
+          {checkMode === "list" ? (
+            <Collapsible open={openCheckList} onOpenChange={setOpenCheckList} className="border rounded-lg">
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center">
+                  <h2 className="text-lg font-semibold">Danh sách kiểm kê</h2>
+                  <Badge variant="outline" className="ml-2">
+                    {checkedItemsCount}/{totalItemCount}
+                  </Badge>
+                </div>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    {openCheckList ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
               </div>
               
-              <div className="space-y-4 p-4">
-                {filteredItems.length === 0 ? (
-                  <p className="py-8 text-center text-muted-foreground">
-                    Không tìm thấy sản phẩm nào
-                  </p>
-                ) : (
-                  filteredItems.map((item) => (
-                    <Card key={item.id} className={item.isChecked ? "border-muted bg-muted/20" : ""}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-base font-semibold">
-                            {item.name}
-                          </CardTitle>
-                          {item.isChecked && (
-                            <Badge variant="secondary" className="flex items-center">
-                              <Check className="h-3 w-3 mr-1" /> Đã kiểm kê
-                            </Badge>
+              <CollapsibleContent>
+                <Separator />
+                
+                <div className="p-4">
+                  <h2 className="mb-4 text-lg font-semibold">Ghi chú phiên kiểm kê</h2>
+                  <Textarea 
+                    placeholder="Nhập ghi chú cho phiên kiểm kê này..." 
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-4 p-4">
+                  {filteredItems.length === 0 ? (
+                    <p className="py-8 text-center text-muted-foreground">
+                      Không tìm thấy sản phẩm nào
+                    </p>
+                  ) : (
+                    filteredItems.map((item) => (
+                      <Card key={item.id} className={item.isChecked ? "border-muted bg-muted/20" : ""}>
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-center">
+                            <CardTitle className="text-base font-semibold">
+                              {item.name}
+                            </CardTitle>
+                            {item.isChecked && (
+                              <Badge variant="secondary" className="flex items-center">
+                                <Check className="h-3 w-3 mr-1" /> Đã kiểm kê
+                              </Badge>
+                            )}
+                          </div>
+                          {item.commonName && (
+                            <p className="text-sm text-muted-foreground">{item.commonName}</p>
                           )}
-                        </div>
-                        {item.commonName && (
-                          <p className="text-sm text-muted-foreground">{item.commonName}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground">Barcode: {item.barcode}</p>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Số lượng hệ thống</p>
-                            <p className="text-lg font-medium">{item.expectedQuantity}</p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm text-muted-foreground">Số lượng thực tế</p>
-                            <Input
-                              type="number"
-                              value={item.actualQuantity === 0 && !item.isChecked ? '' : item.actualQuantity}
-                              onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
-                              min={0}
-                              className="mt-1"
-                              placeholder="Nhập số lượng"
-                            />
-                          </div>
-                          
-                          <div>
-                            <p className="text-sm text-muted-foreground">Chênh lệch</p>
-                            <p className={`text-lg font-medium ${getDifferenceClass(item.difference)}`}>
-                              {item.difference > 0 ? "+" : ""}{item.difference}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <div className="flex w-full justify-end">
-                          {item.isChecked ? (
-                            item.difference !== 0 ? (
-                              <p className={`text-sm ${getDifferenceClass(item.difference)}`}>
-                                {item.difference > 0 
-                                  ? "Số lượng thực tế nhiều hơn hệ thống" 
-                                  : "Số lượng thực tế ít hơn hệ thống"}
+                          <p className="text-xs text-muted-foreground">Barcode: {item.barcode}</p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Số lượng hệ thống</p>
+                              <p className="text-lg font-medium">{item.expectedQuantity}</p>
+                            </div>
+                            
+                            <div>
+                              <p className="text-sm text-muted-foreground">Số lượng thực tế</p>
+                              <Input
+                                type="number"
+                                value={item.actualQuantity === 0 && !item.isChecked ? '' : item.actualQuantity}
+                                onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
+                                min={0}
+                                className="mt-1"
+                                placeholder="Nhập số lượng"
+                              />
+                            </div>
+                            
+                            <div>
+                              <p className="text-sm text-muted-foreground">Chênh lệch</p>
+                              <p className={`text-lg font-medium ${getDifferenceClass(item.difference)}`}>
+                                {item.difference > 0 ? "+" : ""}{item.difference}
                               </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                        <CardFooter>
+                          <div className="flex w-full justify-end">
+                            {item.isChecked ? (
+                              item.difference !== 0 ? (
+                                <p className={`text-sm ${getDifferenceClass(item.difference)}`}>
+                                  {item.difference > 0 
+                                    ? "Số lượng thực tế nhiều hơn hệ thống" 
+                                    : "Số lượng thực tế ít hơn hệ thống"}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground flex items-center">
+                                  <Check className="mr-1 h-3 w-3" /> Đã khớp
+                                </p>
+                              )
                             ) : (
-                              <p className="text-sm text-muted-foreground flex items-center">
-                                <Check className="mr-1 h-3 w-3" /> Đã khớp
-                              </p>
-                            )
-                          ) : (
-                            <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
-                              Chưa kiểm kê
-                            </Badge>
-                          )}
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))
-                )}
-              </div>
-              
-              <div className="flex justify-end p-4">
-                <Button onClick={handleSaveSession} disabled={checkedItemsCount === 0}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Lưu phiên kiểm kê
-                </Button>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+                              <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+                                Chưa kiểm kê
+                              </Badge>
+                            )}
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  )}
+                </div>
+                
+                <div className="flex justify-end p-4">
+                  <Button onClick={handleSaveSession} disabled={checkedItemsCount === 0}>
+                    <Save className="mr-2 h-4 w-4" />
+                    Lưu phiên kiểm kê
+                  </Button>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : (
+            <StockCheckBarcodeMode onSaveSession={handleSaveSession} />
+          )}
         </>
       ) : (
         <div className="rounded-lg border bg-muted/30 p-4">
