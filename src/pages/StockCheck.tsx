@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -19,8 +17,7 @@ import {
   ListChecks, 
   Save, 
   Trash, 
-  ClipboardList, 
-  ArrowLeft 
+  ClipboardList 
 } from "lucide-react";
 import { StockCheckUIItem } from "@/lib/types";
 import { StockCheckBarcodeMode } from "@/components/StockCheckBarcodeMode";
@@ -36,9 +33,7 @@ export default function StockCheck() {
   const [notes, setNotes] = useState("");
   const [predefinedProducts, setPredefinedProducts] = useState<StockCheckUIItem[]>([]);
 
-  // Load pre-defined products when component mounts
   useEffect(() => {
-    // In a real app, this would come from an API call for the current month's inventory
     const productsToCount = products
       .map(product => ({
         id: product.id,
@@ -47,13 +42,13 @@ export default function StockCheck() {
         name: product.scientificName,
         commonName: product.commonName || "",
         expectedQuantity: product.quantity,
-        actualQuantity: 0, // Start with 0, user will input counted quantity
-        difference: -product.quantity, // Initially the difference is negative (shortage)
+        actualQuantity: 0,
+        difference: -product.quantity,
         isChecked: false,
         categoryId: product.categoryId,
         barcode: product.barcode
       }))
-      .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     setPredefinedProducts(productsToCount);
   }, []);
@@ -102,30 +97,15 @@ export default function StockCheck() {
   };
 
   const handleAddPredefinedToSession = () => {
-    // Only add items that have been checked (actualQuantity was entered)
     const checkedItems = predefinedProducts.filter(item => item.isChecked);
     setItems(checkedItems);
     toast.success(`Đã thêm ${checkedItems.length} sản phẩm vào phiên kiểm kê`);
   };
 
-  const goBack = () => {
-    navigate(-1);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goBack}
-            className="mr-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Kiểm kê kho</h1>
-        </div>
+        <h1 className="text-2xl font-bold">Kiểm kê kho</h1>
         <div className="space-x-2">
           <Button
             variant={mode === "list" ? "default" : "outline"}
@@ -149,7 +129,6 @@ export default function StockCheck() {
           onSaveItem={handleAddItem}
           scannedItems={items}
           onRemoveItem={handleRemoveItem}
-          onSaveSession={handleSaveSession}
         />
       )}
 

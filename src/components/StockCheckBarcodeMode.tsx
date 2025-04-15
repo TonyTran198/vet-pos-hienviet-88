@@ -1,33 +1,36 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanBarcode, Plus, Trash } from "lucide-react";
+import { ScanBarcode, Trash } from "lucide-react";
 import { 
   Table, 
   TableBody, 
-  TableCaption, 
   TableCell, 
   TableHead, 
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
 import { StockCheckUIItem } from "@/lib/types";
-import { Label } from "@/components/ui/label";
 import { products } from "@/utils/mockData";
 import { toast } from "sonner";
+import { StockCheckScanDialog } from "./StockCheckScanDialog";
 
 interface StockCheckBarcodeModeProps {
   onSaveItem: (item: StockCheckUIItem) => void;
   scannedItems: StockCheckUIItem[];
   onRemoveItem: (id: string) => void;
-  onSaveSession?: () => void;
 }
 
-export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, onSaveSession }: StockCheckBarcodeModeProps) {
+export function StockCheckBarcodeMode({ 
+  onSaveItem, 
+  scannedItems, 
+  onRemoveItem 
+}: StockCheckBarcodeModeProps) {
   const [barcode, setBarcode] = useState("");
   const [currentProduct, setCurrentProduct] = useState<StockCheckUIItem | null>(null);
   const [actualQuantity, setActualQuantity] = useState<number>(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleBarcodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +40,6 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
       return;
     }
     
-    // Find product by barcode
     const foundProduct = products.find(p => p.barcode === barcode);
     
     if (!foundProduct) {
@@ -45,7 +47,6 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
       return;
     }
     
-    // Create a StockCheckUIItem from the found product
     const stockCheckItem: StockCheckUIItem = {
       id: foundProduct.id,
       productId: foundProduct.id,
@@ -53,7 +54,7 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
       name: foundProduct.scientificName,
       commonName: foundProduct.commonName,
       expectedQuantity: foundProduct.quantity,
-      actualQuantity: foundProduct.quantity, // Default to expected
+      actualQuantity: foundProduct.quantity,
       difference: 0,
       isChecked: false,
       categoryId: foundProduct.categoryId,
@@ -63,6 +64,7 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
     setCurrentProduct(stockCheckItem);
     setActualQuantity(stockCheckItem.expectedQuantity);
     setBarcode("");
+    setIsDialogOpen(true);
   };
   
   const handleSaveScannedItem = () => {
@@ -78,62 +80,34 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
       onSaveItem(updatedItem);
       setCurrentProduct(null);
       setActualQuantity(0);
+      setIsDialogOpen(false);
       toast.success("Đã thêm sản phẩm vào danh sách kiểm kê");
     }
   };
   
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <form onSubmit={handleBarcodeSubmit} className="flex space-x-2">
-          <div className="relative flex-1">
-            <Input
-              placeholder="Nhập mã vạch..."
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              className="pl-10"
-            />
-            <ScanBarcode className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          </div>
-          <Button type="submit">Tìm</Button>
-        </form>
-        
-        {currentProduct && (
-          <Card className="mt-4">
-            <CardContent className="p-4 space-y-4">
-              <div>
-                <h3 className="font-bold text-lg">{currentProduct.name}</h3>
-                {currentProduct.commonName && (
-                  <p className="text-muted-foreground">{currentProduct.commonName}</p>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Số lượng hệ thống</Label>
-                  <p className="font-medium">{currentProduct.expectedQuantity}</p>
-                </div>
-                <div>
-                  <Label htmlFor="actualQuantity">Số lượng thực tế</Label>
-                  <Input
-                    id="actualQuantity"
-                    type="number"
-                    min="0"
-                    value={actualQuantity}
-                    onChange={(e) => setActualQuantity(parseInt(e.target.value) || 0)}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-              
-              <Button onClick={handleSaveScannedItem} className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                Lưu sản phẩm
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <form onSubmit={handleBarcodeSubmit} className="flex space-x-2">
+        <div className="relative flex-1">
+          <Input
+            placeholder="Nhập mã vạch..."
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            className="pl-10"
+          />
+          <ScanBarcode className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        </div>
+        <Button type="submit">Tìm</Button>
+      </form>
+
+      <StockCheckScanDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        product={currentProduct}
+        actualQuantity={actualQuantity}
+        onQuantityChange={setActualQuantity}
+        onSave={handleSaveScannedItem}
+      />
       
       <div>
         <h3 className="text-lg font-medium mb-4">Sản phẩm đã quét ({scannedItems.length})</h3>
@@ -155,7 +129,10 @@ export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, 
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.expectedQuantity}</TableCell>
                   <TableCell>{item.actualQuantity}</TableCell>
-                  <TableCell>{item.difference}</TableCell>
+                  <TableCell className={item.difference < 0 ? "text-red-500" : 
+                                     item.difference > 0 ? "text-green-500" : ""}>
+                    {item.difference}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"
