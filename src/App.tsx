@@ -1,7 +1,6 @@
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
@@ -18,24 +17,22 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/products/add" element={<AddProduct />} />
-            <Route path="/stock-check" element={<StockCheck />} />
-            <Route path="/stock-check/history" element={<StockCheckHistory />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/low-stock" element={<LowStockList />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <Toaster />
+    <Sonner />
+    <BrowserRouter>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/products/add" element={<AddProduct />} />
+          <Route path="/stock-check" element={<StockCheck />} />
+          <Route path="/stock-check/history" element={<StockCheckHistory />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/low-stock" element={<LowStockList />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
