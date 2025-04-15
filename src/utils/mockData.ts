@@ -1,4 +1,4 @@
-import { Product, Category, StockCheck, Report } from "../lib/types";
+import { Product, Category, StockCheck, Report, Activity } from "../lib/types";
 
 export const categories: Category[] = [
   {
@@ -202,7 +202,7 @@ export const reports: Report[] = [
   }
 ];
 
-export const activities = [
+export const activities: Activity[] = [
   {
     id: 'act1',
     type: 'stock_check',
