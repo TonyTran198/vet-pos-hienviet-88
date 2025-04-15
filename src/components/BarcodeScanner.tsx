@@ -42,10 +42,16 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
 
     return () => {
       if (readerRef.current) {
-        // Instead of using reset(), properly stop scanning and release resources
-        if (videoRef.current) {
-          readerRef.current.stopContinuousDecode();
+        // Release camera and resources when component unmounts
+        try {
+          if (videoRef.current && videoRef.current.srcObject) {
+            const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+            tracks.forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+          }
           readerRef.current = null;
+        } catch (error) {
+          console.error("Error releasing camera:", error);
         }
       }
     };
