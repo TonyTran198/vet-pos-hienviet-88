@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +21,10 @@ interface StockCheckBarcodeModeProps {
   onSaveItem: (item: StockCheckUIItem) => void;
   scannedItems: StockCheckUIItem[];
   onRemoveItem: (id: string) => void;
+  onSaveSession?: () => void;
 }
 
-export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem }: StockCheckBarcodeModeProps) {
+export function StockCheckBarcodeMode({ onSaveItem, scannedItems, onRemoveItem, onSaveSession }: StockCheckBarcodeModeProps) {
   const [barcode, setBarcode] = useState("");
   const [currentProduct, setCurrentProduct] = useState<StockCheckUIItem | null>(null);
   const [actualQuantity, setActualQuantity] = useState<number>(0);

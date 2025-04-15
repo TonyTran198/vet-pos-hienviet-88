@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { products, categories } from "@/utils/mockData";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -47,6 +47,12 @@ export default function ProductDetail() {
   };
   
   const handleDelete = () => {
+    if (product.quantity > 0) {
+      toast.error("Không thể xóa sản phẩm còn hàng trong kho");
+      setIsDeleteDialogOpen(false);
+      return;
+    }
+    
     // In a real app, this would delete the product from the database
     toast.success("Đã xóa sản phẩm thành công");
     navigate("/products");
@@ -58,6 +64,8 @@ export default function ProductDetail() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
   
@@ -82,24 +90,8 @@ export default function ProductDetail() {
               )}
             </div>
             <Badge variant={product.status === "active" ? "default" : "destructive"}>
-              {product.status === "active" ? "Còn bán" : "Ngừng bán"}
+              {product.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
             </Badge>
-          </div>
-          
-          {/* Action buttons */}
-          <div className="flex gap-2 mb-6">
-            <Button onClick={handleEdit} className="flex items-center gap-2">
-              <Edit size={16} />
-              Sửa
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="flex items-center gap-2"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 size={16} />
-              Xóa
-            </Button>
           </div>
           
           <Separator className="my-4" />
@@ -206,6 +198,21 @@ export default function ProductDetail() {
             )}
           </div>
         </CardContent>
+        
+        <CardFooter className="p-6 flex gap-2 border-t">
+          <Button onClick={handleEdit} className="flex items-center gap-2">
+            <Edit size={16} />
+            Sửa sản phẩm
+          </Button>
+          <Button 
+            variant="destructive" 
+            className="flex items-center gap-2"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 size={16} />
+            Xóa sản phẩm
+          </Button>
+        </CardFooter>
       </Card>
       
       {/* Delete confirmation dialog */}
