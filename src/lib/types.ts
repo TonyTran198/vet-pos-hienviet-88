@@ -1,3 +1,4 @@
+
 export interface Product {
   id: string;
   scientificName: string;
@@ -57,4 +58,14 @@ export interface Activity {
   description?: string;
   timestamp: Date;
   link?: string;
+}
+
+// Added to support UI components for StockCheck page
+export interface StockCheckUIItem extends StockCheckItem {
+  id: string;
+  name: string;
+  commonName?: string;
+  isChecked: boolean;
+  categoryId: string;
+  barcode: string;
 }
