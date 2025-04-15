@@ -42,8 +42,11 @@ export function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScannerProps)
 
     return () => {
       if (readerRef.current) {
-        readerRef.current.reset();
-        readerRef.current = null;
+        // Instead of using reset(), properly stop scanning and release resources
+        if (videoRef.current) {
+          readerRef.current.stopContinuousDecode();
+          readerRef.current = null;
+        }
       }
     };
   }, [isOpen, onClose, onScan]);
