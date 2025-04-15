@@ -1,30 +1,36 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
 import { 
   ScanBarcode, 
   ListChecks, 
   Save, 
-  Trash, 
-  ClipboardList 
+  ClipboardList,
+  AlertCircle 
 } from "lucide-react";
 import { StockCheckUIItem } from "@/lib/types";
 import { StockCheckBarcodeMode } from "@/components/StockCheckBarcodeMode";
 import { products } from "@/utils/mockData";
 import { toast } from "sonner";
+import { StockCheckScanDialog } from "@/components/StockCheckScanDialog";
+import { StockCheckFilter } from "@/components/StockCheckFilter";
+import { StockCheckList } from "@/components/StockCheckList";
 
 type Mode = "list" | "barcode";
+
+// Mock data for categories - in a real app this would come from an API
+const categories = [
+  { id: "cat1", name: "Thuốc kháng sinh", description: "", productCount: 15 },
+  { id: "cat2", name: "Vaccine", description: "", productCount: 8 },
+  { id: "cat3", name: "Thực phẩm bổ sung", description: "", productCount: 12 },
+];
+
+// Check if current month has been checked already (mocked)
+const currentMonthChecked = false; // This would be from an API in a real app
 
 export default function StockCheck() {
   const navigate = useNavigate();
@@ -32,8 +38,13 @@ export default function StockCheck() {
   const [items, setItems] = useState<StockCheckUIItem[]>([]);
   const [notes, setNotes] = useState("");
   const [predefinedProducts, setPredefinedProducts] = useState<StockCheckUIItem[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<StockCheckUIItem[]>([]);
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<StockCheckUIItem | null>(null);
+  const [actualQuantity, setActualQuantity] = useState(0);
 
   useEffect(() => {
+    // Load products and sort alphabetically (A-Z)
     const productsToCount = products
       .map(product => ({
         id: product.id,
@@ -51,6 +62,7 @@ export default function StockCheck() {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     setPredefinedProducts(productsToCount);
+    setFilteredProducts(productsToCount);
   }, []);
 
   const handleAddItem = (item: StockCheckUIItem) => {
@@ -74,7 +86,7 @@ export default function StockCheck() {
   const handleSaveSession = () => {
     console.log("Saving session with items:", items);
     console.log("Notes:", notes);
-    toast.success("Phiên kiểm kê đã được lưu thành công");
+    toast.success("Đã hoàn thành kiểm kê tháng này");
     setItems([]);
     setNotes("");
   };
@@ -94,141 +106,143 @@ export default function StockCheck() {
         return product;
       })
     );
+    
+    // Also update filtered products
+    setFilteredProducts(prev => 
+      prev.map(product => {
+        if (product.id === id) {
+          const difference = actualQuantity - product.expectedQuantity;
+          return {
+            ...product,
+            actualQuantity,
+            difference,
+            isChecked: true
+          };
+        }
+        return product;
+      })
+    );
   };
 
   const handleAddPredefinedToSession = () => {
-    const checkedItems = predefinedProducts.filter(item => item.isChecked);
+    const checkedItems = filteredProducts.filter(item => item.isChecked);
+    if (checkedItems.length === 0) {
+      toast.error("Vui lòng nhập số lượng thực tế cho ít nhất một sản phẩm");
+      return;
+    }
+    
     setItems(checkedItems);
     toast.success(`Đã thêm ${checkedItems.length} sản phẩm vào phiên kiểm kê`);
+  };
+
+  const handleFilterChange = (filters: { category: string; keyword: string; status: string }) => {
+    const filtered = predefinedProducts.filter(product => {
+      // Category filter
+      const matchesCategory = filters.category === "all" || product.categoryId === filters.category;
+      
+      // Keyword filter (search by name or barcode)
+      const matchesKeyword = 
+        !filters.keyword ||
+        product.name.toLowerCase().includes(filters.keyword.toLowerCase()) ||
+        (product.barcode && product.barcode.includes(filters.keyword));
+      
+      // Status filter
+      const matchesStatus = 
+        filters.status === "all" ||
+        (filters.status === "checked" && product.isChecked) ||
+        (filters.status === "unchecked" && !product.isChecked);
+      
+      return matchesCategory && matchesKeyword && matchesStatus;
+    });
+    
+    setFilteredProducts(filtered);
+  };
+  
+  const handleBarcodeClick = (product: StockCheckUIItem) => {
+    setSelectedProduct(product);
+    setActualQuantity(product.actualQuantity || 0);
+    setScanDialogOpen(true);
+  };
+  
+  const handleSaveScannedProduct = () => {
+    if (selectedProduct) {
+      handleUpdateQuantity(selectedProduct.id, actualQuantity);
+      setScanDialogOpen(false);
+      toast.success(`Đã cập nhật số lượng cho ${selectedProduct.name}`);
+    }
+  };
+  
+  const handleReqeustRecheck = () => {
+    // In a real app, this would make an API call
+    toast.success("Đã gửi yêu cầu kiểm kê lại tháng này");
+    // After approval, we could set currentMonthChecked to false
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Kiểm kê kho</h1>
-        <div className="space-x-2">
-          <Button
-            variant={mode === "list" ? "default" : "outline"}
-            onClick={() => setMode("list")}
-          >
-            <ListChecks className="mr-2 h-4 w-4" />
-            Danh sách có sẵn
-          </Button>
-          <Button
-            variant={mode === "barcode" ? "default" : "outline"}
-            onClick={() => setMode("barcode")}
-          >
-            <ScanBarcode className="mr-2 h-4 w-4" />
-            Quét mã vạch
-          </Button>
-        </div>
+        {!currentMonthChecked && (
+          <div className="space-x-2">
+            <Button
+              variant={mode === "list" ? "default" : "outline"}
+              onClick={() => setMode("list")}
+            >
+              <ListChecks className="mr-2 h-4 w-4" />
+              Danh sách có sẵn
+            </Button>
+            <Button
+              variant={mode === "barcode" ? "default" : "outline"}
+              onClick={() => setMode("barcode")}
+            >
+              <ScanBarcode className="mr-2 h-4 w-4" />
+              Quét mã vạch
+            </Button>
+          </div>
+        )}
       </div>
 
-      {mode === "barcode" && (
-        <StockCheckBarcodeMode
-          onSaveItem={handleAddItem}
-          scannedItems={items}
-          onRemoveItem={handleRemoveItem}
-        />
-      )}
-
-      {mode === "list" && (
-        <div className="space-y-4">
-          {predefinedProducts.length > 0 ? (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Danh sách sản phẩm cần kiểm kê ({predefinedProducts.length})</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tên sản phẩm</TableHead>
-                    <TableHead className="w-[100px]">Hệ thống</TableHead>
-                    <TableHead className="w-[120px]">Thực tế</TableHead>
-                    <TableHead className="w-[100px]">Chênh lệch</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {predefinedProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        {product.name}
-                        {product.commonName && (
-                          <div className="text-xs text-muted-foreground">{product.commonName}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>{product.expectedQuantity}</TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={product.actualQuantity || ""}
-                          onChange={(e) => handleUpdateQuantity(product.id, parseInt(e.target.value) || 0)}
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell className={product.difference < 0 ? "text-red-500" : 
-                                          product.difference > 0 ? "text-green-500" : ""}>
-                        {product.isChecked ? product.difference : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              
-              <Button onClick={handleAddPredefinedToSession} className="w-full">
-                <Save className="mr-2 h-4 w-4" />
-                Thêm vào phiên kiểm kê
-              </Button>
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-4">
-              Đang tải danh sách sản phẩm...
-            </p>
+      {!currentMonthChecked ? (
+        <>
+          {mode === "barcode" && (
+            <StockCheckBarcodeMode
+              onSaveItem={handleAddItem}
+              scannedItems={items}
+              onRemoveItem={handleRemoveItem}
+            />
           )}
-          
-          <div>
-            <h3 className="text-lg font-medium mb-2">
-              Danh sách sản phẩm kiểm kê ({items.length})
-            </h3>
-            {items.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tên sản phẩm</TableHead>
-                    <TableHead className="w-[100px]">Hệ thống</TableHead>
-                    <TableHead className="w-[100px]">Thực tế</TableHead>
-                    <TableHead className="w-[100px]">Chênh lệch</TableHead>
-                    <TableHead className="w-[80px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.expectedQuantity}</TableCell>
-                      <TableCell>{item.actualQuantity}</TableCell>
-                      <TableCell className={item.difference < 0 ? "text-red-500" : 
-                                          item.difference > 0 ? "text-green-500" : ""}>
-                        {item.difference}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveItem(item.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-center text-muted-foreground py-4">
-                Chưa có sản phẩm nào được thêm vào danh sách kiểm kê
-              </p>
-            )}
-          </div>
+
+          {mode === "list" && (
+            <div className="space-y-4">
+              <StockCheckFilter 
+                categories={categories} 
+                onFilterChange={handleFilterChange} 
+              />
+              
+              {filteredProducts.length > 0 ? (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">
+                    Danh sách sản phẩm cần kiểm kê ({filteredProducts.length})
+                  </h3>
+                  
+                  <StockCheckList 
+                    products={filteredProducts}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onBarcodeClick={handleBarcodeClick}
+                  />
+                  
+                  <Button onClick={handleAddPredefinedToSession} className="w-full">
+                    <Save className="mr-2 h-4 w-4" />
+                    Thêm vào phiên kiểm kê
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-4">
+                  Không tìm thấy sản phẩm phù hợp với bộ lọc
+                </p>
+              )}
+            </div>
+          )}
 
           <Card>
             <CardContent className="space-y-2 pt-4">
@@ -255,8 +269,48 @@ export default function StockCheck() {
               Lưu phiên kiểm kê
             </Button>
           </div>
+        </>
+      ) : (
+        // Show this when current month has already been checked
+        <div className="space-y-8">
+          <div className="bg-muted p-6 rounded-lg text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-primary mb-4" />
+            <h3 className="text-xl font-medium mb-2">
+              Đã hoàn thành kiểm kê tháng này
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Bạn đã hoàn thành kiểm kê cho tháng này. Bạn có thể xem lịch sử kiểm kê hoặc yêu cầu kiểm kê lại.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Button variant="outline" onClick={handleReqeustRecheck}>
+                Yêu cầu kiểm kê lại
+              </Button>
+              <Button onClick={() => navigate("/stock-check/history")}>
+                Xem lịch sử kiểm kê
+              </Button>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/stock-check/history")}
+            >
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Lịch sử kiểm kê
+            </Button>
+          </div>
         </div>
       )}
+      
+      <StockCheckScanDialog 
+        isOpen={scanDialogOpen}
+        onClose={() => setScanDialogOpen(false)}
+        product={selectedProduct}
+        actualQuantity={actualQuantity}
+        onQuantityChange={setActualQuantity}
+        onSave={handleSaveScannedProduct}
+      />
     </div>
   );
 }
