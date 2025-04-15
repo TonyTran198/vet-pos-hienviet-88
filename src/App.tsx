@@ -11,6 +11,7 @@ import ProductDetail from "./pages/ProductDetail";
 import StockCheck from "./pages/StockCheck";
 import Reports from "./pages/Reports";
 import LowStockList from "./pages/LowStockList";
+import HighStockList from "./pages/HighStockList";
 import StockCheckHistory from "./pages/StockCheckHistory";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/stock-check/history" element={<StockCheckHistory />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/low-stock" element={<LowStockList />} />
+          <Route path="/high-stock" element={<HighStockList />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
