@@ -202,7 +202,7 @@ export const reports: Report[] = [
   }
 ];
 
-export const activities: Activity[] = [
+export const activities = [
   {
     id: 'act1',
     type: 'stock_check',
