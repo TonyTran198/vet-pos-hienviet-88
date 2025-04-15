@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar";
@@ -49,4 +49,3 @@ export function MainLayout() {
     </TooltipProvider>
   );
 }
-

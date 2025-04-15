@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,10 +44,8 @@ export default function StockCheck() {
   };
 
   const handleSaveSession = () => {
-    // TODO: Save the stock check session to the database
     console.log("Saving session with items:", items);
     console.log("Notes:", notes);
-    // Clear the items and notes after saving
     setItems([]);
     setNotes("");
   };
@@ -86,7 +83,6 @@ export default function StockCheck() {
 
       {mode === "list" && (
         <div className="space-y-4">
-          {/* Stock Check List Mode UI */}
           <div>
             <h3 className="text-lg font-medium mb-2">
               Danh sách sản phẩm kiểm kê ({items.length})
@@ -159,4 +155,3 @@ export default function StockCheck() {
     </div>
   );
 }
-
