@@ -132,7 +132,11 @@ export function StockCheckFilter({ categories, onFilterChange }: StockCheckFilte
             >
               Xóa bộ lọc
             </Button>
-            <Button size="sm" onClick={handleApplyFilters}>
+            <Button 
+              size="sm" 
+              onClick={handleApplyFilters}
+              style={{ backgroundColor: "#1EAEDB", color: "white" }}
+            >
               Áp dụng
             </Button>
           </div>
@@ -141,3 +145,4 @@ export function StockCheckFilter({ categories, onFilterChange }: StockCheckFilte
     </div>
   );
 }
+
