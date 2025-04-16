@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -23,7 +22,6 @@ export function ProductItem({ product, showActions = true, canEditQuantity = fal
     const newQuantity = parseInt(e.target.value);
     if (!isNaN(newQuantity) && newQuantity >= 0) {
       setQuantity(newQuantity);
-      // In a real app, this would update the product quantity in the database
       toast.success(`Cập nhật số lượng thành công: ${product.scientificName}`);
     }
   };
@@ -90,9 +88,6 @@ export function ProductItem({ product, showActions = true, canEditQuantity = fal
                   <Link to={`/products/edit/${product.id}`}>
                     <Edit size={16} />
                   </Link>
-                </Button>
-                <Button size="sm" variant="outline" className="text-destructive">
-                  <Trash2 size={16} />
                 </Button>
               </div>
             )}
