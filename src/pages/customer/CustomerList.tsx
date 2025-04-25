@@ -8,13 +8,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { customers, customerGroups } from "@/utils/customerMockData";
+import { customers as mockCustomers, customerGroups } from "@/utils/customerMockData";
 import { Customer, CustomerStatus } from "@/lib/types";
 import { Search, Plus, Filter, X } from "lucide-react";
 
+// Transform mock data to match Customer type
+const customers: Customer[] = mockCustomers.map(customer => ({
+  ...customer,
+  createdAt: new Date(customer.createdAt),
+  // Add any missing fields with default values
+  status: customer.status as CustomerStatus,
+  tags: customer.tags || [],
+  orderCount: customer.orderCount || 0,
+}));
+
 export default function CustomerList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>(customers);
   const [filterStatus, setFilterStatus] = useState<CustomerStatus | "all">("all");
   const [filterGroup, setFilterGroup] = useState<string>("all");
   const [filterTag, setFilterTag] = useState<string>("");

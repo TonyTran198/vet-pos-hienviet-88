@@ -70,6 +70,7 @@ export const customers = [
     createdAt: '2023-09-15T08:00:00Z',
     lastOrderDate: '2023-11-10T08:00:00Z',
     isPercentage: true,
+    discount: 10
   },
   {
     id: 'customer-2',
@@ -85,6 +86,7 @@ export const customers = [
     createdAt: '2023-09-20T08:00:00Z',
     lastOrderDate: '2023-11-05T08:00:00Z',
     isPercentage: true,
+    discount: 5
   },
   {
     id: 'customer-3',
@@ -100,6 +102,7 @@ export const customers = [
     createdAt: '2023-10-28T08:00:00Z',
     lastOrderDate: '2023-10-30T08:00:00Z',
     isPercentage: false,
+    discount: 50000
   },
   {
     id: 'customer-4',
@@ -114,6 +117,7 @@ export const customers = [
     createdAt: '2023-11-01T08:00:00Z',
     lastOrderDate: '2023-11-01T08:00:00Z',
     isPercentage: true,
+    discount: 2
   },
   {
     id: 'customer-5',
@@ -129,5 +133,6 @@ export const customers = [
     createdAt: '2023-08-12T08:00:00Z',
     lastOrderDate: '2023-11-12T08:00:00Z',
     isPercentage: true,
+    discount: 10
   }
 ];
