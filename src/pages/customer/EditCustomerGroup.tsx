@@ -35,7 +35,7 @@ export default function EditCustomerGroup() {
     if (group) {
       setName(group.name);
       setDescription(group.description || '');
-      setDiscount(group.discount.toString());
+      setDiscount(group.discount.toString()); // Convert number to string
       setIsPercentage(group.isPercentage);
       
       // Get customers that belong to this group
@@ -49,9 +49,9 @@ export default function EditCustomerGroup() {
         // Set condition values
         group.conditions.forEach(condition => {
           if (condition.type === 'min_orders') {
-            setMinOrderCount(condition.value.toString());
+            setMinOrderCount(condition.value.toString()); // Convert number to string
           } else if (condition.type === 'min_spend') {
-            setMinSpend(condition.value.toString());
+            setMinSpend(condition.value.toString()); // Convert number to string
           } else if (condition.type === 'tag') {
             setCustomerTag(condition.value);
           }

@@ -134,59 +134,60 @@ export default function CustomerList() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tất cả nhóm</SelectItem>
-                      {customerGroups.map(group => (
+                      {customerGroups.map((group) => (
                         <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
                       ))}
-                      <SelectItem value="none">Không thuộc nhóm nào</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Nhãn</label>
-                  <Select
-                    value={filterTag}
-                    onValueChange={setFilterTag}
+                {allTags.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tag</label>
+                    <Select
+                      value={filterTag}
+                      onValueChange={setFilterTag}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tất cả tag" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Tất cả tag</SelectItem>
+                        {allTags.map((tag) => (
+                          <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {activeFilterCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    className="w-full"
+                    onClick={resetFilters}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tất cả nhãn" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Tất cả nhãn</SelectItem>
-                      {allTags.map(tag => (
-                        <SelectItem key={tag} value={tag}>{tag}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button variant="ghost" className="w-full" onClick={resetFilters}>
-                  <X size={16} className="mr-2" />
-                  Xóa bộ lọc
-                </Button>
+                    <X className="mr-2 h-4 w-4" />
+                    Xóa bộ lọc
+                  </Button>
+                )}
               </div>
             </PopoverContent>
           </Popover>
         </div>
       </div>
       
-      {filteredCustomers.length > 0 ? (
-        <div className="space-y-4">
-          {filteredCustomers.map((customer) => (
+      <div className="space-y-2">
+        {filteredCustomers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Không tìm thấy khách hàng nào
+          </div>
+        ) : (
+          filteredCustomers.map((customer) => (
             <CustomerItem key={customer.id} customer={customer} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <h3 className="text-lg font-medium">Không tìm thấy khách hàng</h3>
-          <p className="mt-2 text-muted-foreground">
-            Thay đổi bộ lọc hoặc thêm khách hàng mới
-          </p>
-          <Button asChild className="mt-4">
-            <Link to="/customers/add"><Plus size={16} className="mr-2" /> Thêm khách hàng</Link>
-          </Button>
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
