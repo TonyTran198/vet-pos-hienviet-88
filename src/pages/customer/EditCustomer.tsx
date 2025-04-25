@@ -10,6 +10,7 @@ import { customers } from '@/utils/customerMockData';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomerStatus } from '@/lib/types';
 
 const editCustomerSchema = z.object({
   name: z.string().min(2, "Tên khách hàng phải có ít nhất 2 ký tự"),
@@ -34,7 +35,7 @@ export default function EditCustomer() {
       name: customer.name,
       email: customer.email || '',
       address: customer.address || '',
-      status: customer.status
+      status: customer.status as CustomerStatus
     }
   });
 

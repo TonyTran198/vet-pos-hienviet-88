@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,7 @@ export default function EditCustomerGroup() {
           } else if (condition.type === 'min_spend') {
             setMinSpend(condition.value.toString()); // Convert number to string
           } else if (condition.type === 'tag') {
-            setCustomerTag(condition.value);
+            setCustomerTag(condition.value.toString()); // Convert to string if needed
           }
         });
       }

@@ -68,7 +68,8 @@ export const customers = [
     orderCount: 12,
     totalSpent: 8500000,
     createdAt: '2023-09-15T08:00:00Z',
-    lastOrderDate: '2023-11-10T08:00:00Z'
+    lastOrderDate: '2023-11-10T08:00:00Z',
+    isPercentage: true,
   },
   {
     id: 'customer-2',
@@ -82,7 +83,8 @@ export const customers = [
     orderCount: 8,
     totalSpent: 4200000,
     createdAt: '2023-09-20T08:00:00Z',
-    lastOrderDate: '2023-11-05T08:00:00Z'
+    lastOrderDate: '2023-11-05T08:00:00Z',
+    isPercentage: true,
   },
   {
     id: 'customer-3',
@@ -96,7 +98,8 @@ export const customers = [
     orderCount: 2,
     totalSpent: 800000,
     createdAt: '2023-10-28T08:00:00Z',
-    lastOrderDate: '2023-10-30T08:00:00Z'
+    lastOrderDate: '2023-10-30T08:00:00Z',
+    isPercentage: false,
   },
   {
     id: 'customer-4',
@@ -109,7 +112,8 @@ export const customers = [
     orderCount: 1,
     totalSpent: 500000,
     createdAt: '2023-11-01T08:00:00Z',
-    lastOrderDate: '2023-11-01T08:00:00Z'
+    lastOrderDate: '2023-11-01T08:00:00Z',
+    isPercentage: true,
   },
   {
     id: 'customer-5',
@@ -123,6 +127,7 @@ export const customers = [
     orderCount: 15,
     totalSpent: 12500000,
     createdAt: '2023-08-12T08:00:00Z',
-    lastOrderDate: '2023-11-12T08:00:00Z'
+    lastOrderDate: '2023-11-12T08:00:00Z',
+    isPercentage: true,
   }
 ];
