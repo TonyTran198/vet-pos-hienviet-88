@@ -1,4 +1,3 @@
-
 import { Customer, CustomerGroup } from "@/lib/types";
 
 export const customers: Customer[] = [
@@ -49,6 +48,8 @@ export const customers: Customer[] = [
     address: "27 Nguyễn Đình Chiểu, Quận 1, TP. HCM",
     tags: ["VIP"],
     groupId: "group-001",
+    isPercentage: true,
+    discount: 7,
     createdAt: new Date("2023-03-05"),
     orderCount: 18,
     status: "active"
@@ -60,6 +61,8 @@ export const customers: Customer[] = [
     email: "em.hoang@gmail.com",
     tags: [],
     note: "Khách hàng không còn hoạt động",
+    isPercentage: true,
+    discount: 0,
     createdAt: new Date("2022-11-12"),
     orderCount: 3,
     status: "inactive"
