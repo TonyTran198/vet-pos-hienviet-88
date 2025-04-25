@@ -14,6 +14,24 @@ import LowStockList from "./pages/LowStockList";
 import HighStockList from "./pages/HighStockList";
 import StockCheckHistory from "./pages/StockCheckHistory";
 import NotFound from "./pages/NotFound";
+// Supplier routes
+import SupplierList from "./pages/supplier/SupplierList";
+import AddSupplier from "./pages/supplier/AddSupplier";
+import SupplierDetail from "./pages/supplier/SupplierDetail";
+import EditSupplier from "./pages/supplier/EditSupplier";
+// Purchase order routes
+import PurchaseOrderList from "./pages/purchase/PurchaseOrderList";
+import CreatePurchaseOrder from "./pages/purchase/CreatePurchaseOrder";
+import PurchaseOrderDetail from "./pages/purchase/PurchaseOrderDetail";
+// Customer routes
+import CustomerList from "./pages/customer/CustomerList";
+import AddCustomer from "./pages/customer/AddCustomer";
+import CustomerDetail from "./pages/customer/CustomerDetail";
+import EditCustomer from "./pages/customer/EditCustomer";
+// Customer group routes
+import CustomerGroupList from "./pages/customer/CustomerGroupList";
+import AddCustomerGroup from "./pages/customer/AddCustomerGroup";
+import EditCustomerGroup from "./pages/customer/EditCustomerGroup";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +52,28 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/low-stock" element={<LowStockList />} />
           <Route path="/high-stock" element={<HighStockList />} />
+          
+          {/* Supplier Management Routes */}
+          <Route path="/suppliers" element={<SupplierList />} />
+          <Route path="/suppliers/add" element={<AddSupplier />} />
+          <Route path="/suppliers/:supplierId" element={<SupplierDetail />} />
+          <Route path="/suppliers/edit/:supplierId" element={<EditSupplier />} />
+          
+          {/* Purchase Order Routes */}
+          <Route path="/purchase-orders" element={<PurchaseOrderList />} />
+          <Route path="/purchase-orders/create" element={<CreatePurchaseOrder />} />
+          <Route path="/purchase-orders/:orderId" element={<PurchaseOrderDetail />} />
+          
+          {/* Customer Management Routes */}
+          <Route path="/customers" element={<CustomerList />} />
+          <Route path="/customers/add" element={<AddCustomer />} />
+          <Route path="/customers/:customerId" element={<CustomerDetail />} />
+          <Route path="/customers/edit/:customerId" element={<EditCustomer />} />
+          
+          {/* Customer Group Routes */}
+          <Route path="/customer-groups" element={<CustomerGroupList />} />
+          <Route path="/customer-groups/add" element={<AddCustomerGroup />} />
+          <Route path="/customer-groups/edit/:groupId" element={<EditCustomerGroup />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

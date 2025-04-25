@@ -11,6 +11,12 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderTree,
+  Users,
+  Truck,
+  FileText,
+  User,
+  UserPlus,
+  UsersRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +35,10 @@ export function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     { icon: FolderTree, label: "Danh mục sản phẩm", path: "/categories" },
     { icon: ClipboardCheck, label: "Kiểm kê", path: "/stock-check" },
     { icon: BarChart2, label: "Báo cáo", path: "/reports" },
+    { icon: Truck, label: "Nhà cung cấp", path: "/suppliers" },
+    { icon: FileText, label: "Đơn nhập hàng", path: "/purchase-orders" },
+    { icon: User, label: "Khách hàng", path: "/customers" },
+    { icon: UsersRound, label: "Nhóm khách hàng", path: "/customer-groups" },
     { icon: Settings, label: "Cài đặt", path: "/settings" },
   ];
 
